@@ -1,32 +1,83 @@
 # clj
 
-FIXME: description
+[Spec docs](https://clojure.org/guides/spec)
+[lang cheatsheet](https://learnxinyminutes.com/clojure)
 
-## Installation
+## Setup
 
-Download from http://example.com/FIXME.
+#### Prerequisite
 
-## Usage
+```sh
+brew install leiningen
+git clone git@github.com:codethread/clojure-spec-playground.git
+```
 
-FIXME: explanation
+More info at:
 
-    $ java -jar clj-0.1.0-standalone.jar [args]
+- https://leiningen.org/
+- https://leiningen.org/tutorial.html
 
-## Options
+#### Running
 
-FIXME: listing of options this app accepts.
+```sh
+cd clojure-spec-playground
+lein repl
+# inside repl, import the namespace with reload
+# for simplicity just write code that runs in `core.clj` and re-run:
+$ (use 'clj.core :reload)
+```
 
-## Examples
+## Notes
 
-...
+test/instrument is a little confusing, how do i run this
 
-### Bugs
+- ahhh this just checks :args :P
 
-...
+so seems you'd have this on in prod
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+test/check - this does the work, it also gives back number of tests and a seed
+
+however results back are crazy hard to read
+
+`(-> (stest/enumerate-namespace 'user) stest/check)` will test everything
+
+can stub a function, now it will use generator stuff
+
+```clj
+(stest/instrument `invoke-service {:stub #{`invoke-service}})
+```
+
+function predicates are confusing, but that's likely the me trying to jump the gun without understanding clojure
+
+in one go, someone wrote a [macro](https://github.com/danielcompton/defn-spec)
+
+```clj
+;; Predicate definitions elided for brevity
+(s/def ::instant instant?)
+(s/def ::zone-id zone-id?)
+(s/def ::zoned-date-time zoned-date-time?)
+```
+
+default way
+
+```clj
+(defn to-zoned-dt
+  [instant zone-id]
+  (ZonedDateTime/ofInstant instant zone-id))
+
+(s/fdef to-zoned-dt
+        :args (s/cat :instant ::instant :zone-id ::zone-id)
+        :ret ::zoned-date-time)
+```
+
+alt
+
+```clj
+(ds/defn to-zoned-dt :- ::zoned-date-time
+  [instant :- ::instant
+   zone-id :- ::zone-id]
+  (ZonedDateTime/ofInstant instant zone-id))
+```
 
 ## License
 
